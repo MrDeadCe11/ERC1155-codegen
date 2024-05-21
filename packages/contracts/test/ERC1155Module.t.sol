@@ -4,7 +4,7 @@ pragma solidity >=0.8.24;
 import {Test} from 'forge-std/Test.sol';
 import {console} from 'forge-std/console.sol';
 import 'forge-std/StdJson.sol';
-
+import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import {ResourceId} from '@latticexyz/store/src/ResourceId.sol';
 import {StoreSwitch} from '@latticexyz/store/src/StoreSwitch.sol';
 import {World} from '@latticexyz/world/src/World.sol';
@@ -70,23 +70,20 @@ contract WrongReturnDataERC1155Recipient is ERC1155TokenReceiver {
 
 contract NonERC1155Recipient {}
 
-contract ERC1155Test is Test, IERC1155Events, IERC1155Errors {
+contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     using WorldResourceIdInstance for ResourceId;
     using stdJson for string;
 
     address deployer = vm.addr(vm.envUint('PRIVATE_KEY'));
-    address worldAddress;
     IWorld world;
     ERC1155Module erc1155Module;
     IERC1155 base;
     ERC1155System token;
 
-    function setUp() public {
-        string memory json = vm.readFile(string(abi.encodePacked(vm.projectRoot(), '/deploys/31337/latest.json')));
-        worldAddress = json.readAddress('.worldAddress');
+    function setUp() public override {
+        super.setUp();
         world = IWorld(worldAddress);
-
-        // world.installModule(new PuppetModule(), new bytes(0));
+        world.installModule(new PuppetModule(), new bytes(0));
         StoreSwitch.setStoreAddress(address(world));
 
         // Register a new ERC1155 base
