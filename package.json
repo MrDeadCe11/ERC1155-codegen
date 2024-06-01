@@ -1,6 +1,9 @@
 {
-  "name": "mud-template-vanilla",
-  "private": true,
+  "name": "erc115-puppet-module",
+  "version": "0.0.1",
+  "description": "an erc1155 implementaion in the Mud-Framework",
+  "private": false,
+  
   "scripts": {
     "build": "pnpm recursive run build",
     "dev": "mprocs",

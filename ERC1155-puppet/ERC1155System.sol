@@ -14,17 +14,17 @@ import { IERC1155Receiver } from './IERC1155Receiver.sol';
 import { IERC1155 } from './IERC1155.sol';
 import { IERC1155MetadataURI } from './IERC1155MetadataURI.sol';
 
-import { ERC1155MetadataURI } from '../codegen/tables/ERC1155MetadataURI.sol';
-import { ERC1155URIStorage } from '../codegen/tables/ERC1155URIStorage.sol';
-import { OperatorApproval } from '../codegen/tables/OperatorApproval.sol';
-import { Owners } from '../codegen/tables/Owners.sol';
-import { TotalSupply } from '../codegen/tables/TotalSupply.sol';
+import { ERC1155MetadataURI } from './tables/ERC1155MetadataURI.sol';
+import { ERC1155URIStorage } from './tables/ERC1155URIStorage.sol';
+import { OperatorApproval } from './tables/OperatorApproval.sol';
+import { Owners } from './tables/Owners.sol';
+import { TotalSupply } from './tables/TotalSupply.sol';
 
-import { ERC1155Utils } from '../libraries/utils/ERC1155Utils.sol';
+import { ERC1155Utils } from './libraries/utils/ERC1155Utils.sol';
 
 import { _metadataTableId, _erc1155URIStorageTableId, _totalSupplyTableId, _operatorApprovalTableId, _ownersTableId } from './utils.sol';
-import { LibString } from '../libraries/LibString.sol';
-import 'forge-std/console2.sol';
+import { LibString } from './libraries/LibString.sol';
+
 contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, System, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using LibString for uint256;
@@ -252,16 +252,9 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    */
 
   function _setAccountBalance(address account, uint256 tokenId, int256 delta) internal returns (uint256 balance) {
-    console2.log("setAccountBalance", account, tokenId);
-    console2.logInt(delta);
     if (delta < 0) {
-      console2.log('negative delta', uint256(-delta));
-      console2.log('balanceOf', balanceOf(account, tokenId));
       balance = uint256(balanceOf(account, tokenId) - uint256(-delta));
-
     } else {
-      console2.log('positive delta', uint256(delta));
-      console2.log('balanceOf', balanceOf(account, tokenId));
       balance = uint256(balanceOf(account, tokenId) + uint256(delta));
 
     }
@@ -324,7 +317,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     uint256 tokenId;
     uint256 _value;
     for (uint256 i; i < len; i++) {
-      console2.log('len', len);
       tokenId = tokenIds[i];
       _value = _values[i];
 
@@ -343,7 +335,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
 
       // Perform (optional) operator check
       if (to != address(0)) {
-        console2.log("calling set to");
         unchecked {
           _setAccountBalance(to, tokenId, int256(_value));
         }
@@ -351,7 +342,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
 
       // Execute the update
       if (from != address(0)) {
-        console2.log('calling set from');
         unchecked {
           _setAccountBalance(from, tokenId, -int256(_value));
         }
@@ -559,8 +549,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
   ) private {
     if (to.code.length > 0) {
       try IERC1155Receiver(to).onERC1155Received(_msgSender(), from, tokenId, value, data) returns (bytes4 retval) {
-        console2.logBytes4(retval);
-        console2.logBytes4(IERC1155Receiver.onERC1155Received.selector);
         if (retval != IERC1155Receiver.onERC1155Received.selector) {
           revert ERC1155InvalidReceiver(to);
         }

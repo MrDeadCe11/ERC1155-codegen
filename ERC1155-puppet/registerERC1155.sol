@@ -11,9 +11,9 @@ import { ERC1155Module } from './ERC1155Module.sol';
 import { MODULE_NAMESPACE_ID, ERC1155_REGISTRY_TABLE_ID } from './constants.sol';
 import { IERC1155 } from './IERC1155.sol';
 
-import { ERC1155MetadataURI } from '../codegen/tables/ERC1155MetadataURI.sol';
-import { ERC1155Registry } from '../codegen/tables/ERC1155Registry.sol';
-import 'forge-std/console2.sol';
+import { ERC1155MetadataURI } from './tables/ERC1155MetadataURI.sol';
+import { ERC1155Registry } from './tables/ERC1155Registry.sol';
+
 
 /**
  * @notice Register a new ERC1155 token with the given metaDataURI in a given namespace
