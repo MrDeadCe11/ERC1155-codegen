@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "an erc1155 implementaion in the Mud-Framework",
   "private": false,
-  
+  "author": "MrDeadCe11",
+  "license": "MIT",
   "scripts": {
     "build": "pnpm recursive run build",
     "dev": "mprocs",
