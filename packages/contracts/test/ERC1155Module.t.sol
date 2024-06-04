@@ -347,15 +347,15 @@ contract ERC1155Test is Test, IERC1155Events, IERC1155Errors {
         token.mint(address(0), id, value);
     }
 
-    function testDoubleMintIncreasesTotalSupply(uint256 id, address to, uint256 value) public {
-        vm.assume(to != address(0));
-        vm.assume(value != 0 && value < (uint256(type(int256).max) / 2));
-        token.mint(to, id, value);
+    // function testDoubleMintIncreasesTotalSupply(uint256 id, address to, uint256 value) public {
+    //     vm.assume(to != address(0));
+    //     vm.assume(value != 0 && value < (uint256(type(int256).max) / 2));
+    //     token.mint(to, id, value);
 
-        token.mint(to, id, value);
-        uint256 totalSupply = token.totalSupply(id);
-        assertEq(totalSupply, value + value);
-    }
+    //     token.mint(to, id, value);
+    //     uint256 totalSupply = token.totalSupply(id);
+    //     assertEq(totalSupply, value + value);
+    // }
 
     function testBurnNonExistentReverts(uint256 id, uint256 value) public {
         vm.expectRevert(abi.encodeWithSelector(ERC1155NonexistentToken.selector, id));

@@ -50,8 +50,7 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
   function transferFrom(address from, address to, uint256 tokenId, uint256 value) public virtual {
      if(to == address(0)) revert ERC1155InvalidReceiver(to);
     // (from != 0). Therefore, it is not needed to verify that the return value is not 0 here.
-    (uint256[] memory ids, uint256[] memory values) = _asSingletonArrays(tokenId, value);
-    _update(from, to, ids, values);
+    _transfer(from, to, tokenId, value);
   }
 
   /**
@@ -71,8 +70,7 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     uint256 value,
     bytes memory data
   ) public virtual {
-    transferFrom(from, to, tokenId, value);
-    _checkOnERC1155Received(from, to, tokenId, value, data);
+    _safeTransferFrom(from, to, tokenId, value, data);
   }
 
   function safeBatchTransferFrom(
@@ -83,9 +81,8 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     bytes calldata data
   ) external virtual {
     if(to == address(0)) revert ERC1155InvalidReceiver(to);
-    _update(from, to, ids, values);
     for (uint256 i; i < ids.length; i++) {
-      _checkOnERC1155Received(from, to, ids[i], values[i], data);
+      _safeTransferFrom(from, to, ids[i], values[i], data);
     }
   }
 
@@ -218,11 +215,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     return bytes(tokenURI).length > 0 ? string.concat(baseURI, tokenURI) : baseURI;
   }
 
-  function setTokenURI(uint256 tokenId, string memory tokenURI) public virtual {
-    _requireOwner();
-    ERC1155URIStorage.setUri(_erc1155URIStorageTableId(_namespace()), tokenId, tokenURI);
-  }
-
   /**
    * @dev Returns whether `spender` is allowed to manage `owner`'s tokens, or `tokenId` in
    * particular (ignoring whether it is owned by `owner`).
@@ -255,16 +247,12 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     }
     Owners.setBalance(_ownersTableId(_namespace()), account, tokenId, balance);
   }
-
-  function totalSupply(uint256 tokenId) public view returns (uint256 _totalSupply) {
-    _totalSupply = TotalSupply.getTotalSupply(_totalSupplyTableId(_namespace()), tokenId);
-  }
-
   function _setTotalSupply(uint256 tokenId, int256 delta) internal returns (uint256 supply) {
+    uint256 totalSupply = TotalSupply.getTotalSupply(_totalSupplyTableId(_namespace()), tokenId);
     if (delta < 0) {
-      supply = totalSupply(tokenId) - uint256(-delta);
+      supply = totalSupply - uint256(-delta);
     } else {
-      supply = totalSupply(tokenId) + uint256(delta);
+      supply = totalSupply + uint256(delta);
     }
     TotalSupply.setTotalSupply(_totalSupplyTableId(_namespace()), tokenId, supply);
   }
@@ -299,7 +287,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     uint256 tokenId;
     uint256 _value;
     for (uint256 i; i < len; i++) {
-      console2.log('len', len);
       tokenId = tokenIds[i];
       _value = _values[i];
 
@@ -308,7 +295,7 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
         // Overflow check required: The rest of the code assumes that totalSupply never overflows
         _setTotalSupply(tokenId, int256(_value));
       } else {
-        if(totalSupply(tokenId) == 0)revert ERC1155NonexistentToken(tokenId);
+        if(TotalSupply.getTotalSupply(_totalSupplyTableId(_namespace()), tokenId) == 0)revert ERC1155NonexistentToken(tokenId);
         fromBalance = balanceOf(from, tokenId);
         if (fromBalance < _value) {
           revert ERC1155InsufficientBalance(from, fromBalance, _value, tokenId);
@@ -317,7 +304,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
 
       // Perform (optional) operator check
       if (to != address(0)) {
-        console2.log("calling set to");
         unchecked {
           _setAccountBalance(to, tokenId, int256(_value));
         }
@@ -325,7 +311,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
 
       // Execute the update
       if (from != address(0)) {
-        console2.log('calling set from');
         unchecked {
           _setAccountBalance(from, tokenId, -int256(_value));
         }
@@ -356,9 +341,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    * Emits a {Transfer} event.
    */
   function _burn(address account, uint256 tokenId, uint256 value) internal {
-    if (totalSupply(tokenId) == 0) {
-      revert ERC1155NonexistentToken(tokenId);
-    }
     (uint256[] memory ids, uint256[] memory values) = _asSingletonArrays(tokenId, value);
 
     _update(account, address(0), ids, values);
@@ -491,8 +473,8 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    * forwarded in {IERC1155Receiver-onERC1155Received} to contract recipients.
    */
   function _safeTransfer(address from, address to, uint256 tokenId, uint256 value, bytes memory data) internal virtual {
-    _transfer(from, to, tokenId, value);
-    _checkOnERC1155Received(from, to, tokenId, value, data);
+    (uint256[] memory ids, uint256[] memory values) = _asSingletonArrays(tokenId, value);
+    _updateWithAcceptanceCheck(_msgSender(), to, ids, values, data);
   }
 
   /**
