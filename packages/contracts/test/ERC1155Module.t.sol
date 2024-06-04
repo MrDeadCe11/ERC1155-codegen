@@ -12,6 +12,7 @@ import {WorldResourceIdLib, WorldResourceIdInstance} from '@latticexyz/world/src
 import {IWorld} from '../src/codegen/world/IWorld.sol';
 import {NamespaceOwner} from '@latticexyz/world/src/codegen/tables/NamespaceOwner.sol';
 import {IWorldErrors} from '@latticexyz/world/src/IWorldErrors.sol';
+import {RESOURCE_SYSTEM, RESOURCE_NAMESPACE} from '@latticexyz/world/src/worldResourceTypes.sol';
 
 import {PuppetModule} from '@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol';
 import {ERC1155Module} from '../src/systems/ERC1155Module.sol';
@@ -23,6 +24,7 @@ import {registerERC1155} from '../src/systems/registerERC1155.sol';
 import {IERC1155Errors} from '../src/systems/IERC1155Errors.sol';
 import {IERC1155Events} from '../src/systems/IERC1155Events.sol';
 import {_erc1155SystemId} from '../src/systems/utils.sol';
+import {MODULE_NAMESPACE} from '../src/systems/constants.sol';
 
 abstract contract ERC1155TokenReceiver {
     function onERC1155Received(address, address, uint256, uint256, bytes calldata) external virtual returns (bytes4) {
@@ -70,7 +72,7 @@ contract WrongReturnDataERC1155Recipient is ERC1155TokenReceiver {
 
 contract NonERC1155Recipient {}
 
-contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
+contract ERC1155Test is Test, IERC1155Events, IERC1155Errors {
     using WorldResourceIdInstance for ResourceId;
     using stdJson for string;
 
@@ -79,21 +81,38 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     ERC1155Module erc1155Module;
     IERC1155 base;
     ERC1155System token;
+    address worldAddress;
 
-    function setUp() public override {
-        super.setUp();
+    function setUp() public {
+        // super.setUp();
+        vm.startPrank(deployer);
+        string memory json = vm.readFile(string(abi.encodePacked(vm.projectRoot(), '/deploys/31337/latest.json')));
+         worldAddress = json.readAddress('.worldAddress');
         world = IWorld(worldAddress);
-        world.installModule(new PuppetModule(), new bytes(0));
         StoreSwitch.setStoreAddress(address(world));
+        world.installModule(new PuppetModule(), new bytes(0));
+   
+        // // Register a new ERC1155 base
+         base = registerERC1155(world, 'newERC1155', 'testTokenURI/');
 
-        // Register a new ERC1155 base
-        base = registerERC1155(world, 'myERC1155', 'testTokenURI/');
+        token = new ERC1155System();
 
-        token = ERC1155System(address(base));
+        ResourceId erc1155SystemId = _erc1155SystemId('newERC1155'); //WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'newERC1155', name: ''});
+
+        ResourceId erc1155NamespaceId = WorldResourceIdLib.encodeNamespace('newERC1155');
+
+        world.registerSystem(erc1155SystemId, token, true);
+
+        world.grantAccess(erc1155SystemId, worldAddress);
+        world.grantAccess(erc1155SystemId, address(this));
+        IWorld(worldAddress).registerFunctionSelector(erc1155SystemId, 'mint(address,uint256,uint256)');
+        IWorld(worldAddress).registerFunctionSelector(erc1155SystemId, 'balanceOf(address,uint256)');
+        world.transferOwnership(erc1155NamespaceId, address(this));        
+        vm.stopPrank();
     }
 
     function _expectAccessDenied(address caller) internal {
-        ResourceId tokenSystemId = _erc1155SystemId('myERC1155');
+        ResourceId tokenSystemId = _erc1155SystemId('newERC1155');
         vm.expectRevert(
             abi.encodeWithSelector(IWorldErrors.World_AccessDenied.selector, tokenSystemId.toString(), caller)
         );
@@ -162,16 +181,16 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.assume(owner != address(0));
 
-        token.mint(owner, id, value);
+        world.mint(owner, id, value);
 
-        assertEq(token.balanceOf(owner, id), value);
+        assertEq(world.balanceOf(owner, id), value);
     }
 
     function testTokenURI(address owner) public {
         vm.assume(owner != address(0));
 
-        token.mint(owner, 1, 1);
-        token.setTokenURI(1, '1');
+        world.mint(owner, 1, 1);
+        world.setTokenURI(1, '1');
         IERC1155MetadataURI tokenMetadata = IERC1155MetadataURI(address(token));
         assertEq(tokenMetadata.uri(1), 'testTokenURI/1');
     }

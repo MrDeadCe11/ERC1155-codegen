@@ -108,12 +108,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     _mint(to, tokenId, value, data);
   }
 
-  function setMetadataURI(string memory metadataURI) public virtual {
-    _requireOwner();
-    ERC1155MetadataURI.setUri(_metadataTableId(_namespace()), metadataURI );
-  }
-
-
   /**
    * @dev Mints `tokenId` and transfers it to `to`.
    *
@@ -252,16 +246,10 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    */
 
   function _setAccountBalance(address account, uint256 tokenId, int256 delta) internal returns (uint256 balance) {
-    console2.log("setAccountBalance", account, tokenId);
-    console2.logInt(delta);
     if (delta < 0) {
-      console2.log('negative delta', uint256(-delta));
-      console2.log('balanceOf', balanceOf(account, tokenId));
       balance = uint256(balanceOf(account, tokenId) - uint256(-delta));
 
     } else {
-      console2.log('positive delta', uint256(delta));
-      console2.log('balanceOf', balanceOf(account, tokenId));
       balance = uint256(balanceOf(account, tokenId) + uint256(delta));
 
     }
@@ -270,19 +258,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
 
   function totalSupply(uint256 tokenId) public view returns (uint256 _totalSupply) {
     _totalSupply = TotalSupply.getTotalSupply(_totalSupplyTableId(_namespace()), tokenId);
-  }
-
-  function currentSupply(uint256 tokenId) public view returns (uint256 _currentSupply) {
-    _currentSupply = TotalSupply.getCurrentSupply(_totalSupplyTableId(_namespace()), tokenId);
-  }
-
-  function _setCurrentSupply(uint256 tokenId, int256 delta) internal returns (uint256 supply) {
-    if (delta < 0) {
-      supply = currentSupply(tokenId) - uint256(-delta);
-    } else {
-      supply = currentSupply(tokenId) + uint256(delta);
-    }
-    TotalSupply.setCurrentSupply(_totalSupplyTableId(_namespace()), tokenId, supply);
   }
 
   function _setTotalSupply(uint256 tokenId, int256 delta) internal returns (uint256 supply) {
@@ -332,7 +307,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
         _requireOwner();
         // Overflow check required: The rest of the code assumes that totalSupply never overflows
         _setTotalSupply(tokenId, int256(_value));
-        _setCurrentSupply(tokenId, int256(_value));
       } else {
         if(totalSupply(tokenId) == 0)revert ERC1155NonexistentToken(tokenId);
         fromBalance = balanceOf(from, tokenId);
@@ -389,7 +363,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
 
     _update(account, address(0), ids, values);
     _setTotalSupply(tokenId, -int256(value));
-    _setCurrentSupply(tokenId, -int256(value));
   }
 
   /**

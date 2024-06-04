@@ -1,7 +1,7 @@
 import { defineWorld } from "@latticexyz/world";
 
 export default defineWorld({
-  namespace: "ERC1155",
+  namespace: "",
   userTypes: {
     ResourceId: { filePath: '@latticexyz/store/src/ResourceId.sol', type: 'bytes32' },
   },
