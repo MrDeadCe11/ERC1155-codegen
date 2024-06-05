@@ -262,7 +262,7 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     uint256 len = tokenIds.length;
     if (len != _values.length) revert ERC1155InvalidArrayLength(len, _values.length);
     if (_msgSender() != from && from != address(0)) {
-      if (!isApprovedForAll(from, _msgSender())) revert ERC1155MissingApprovalForAll(_msgSender(), from);
+      if (!_isAuthorized(from, _msgSender())) revert ERC1155MissingApprovalForAll(_msgSender(), from);
     }
     
     // check if both to and from are address(0)
