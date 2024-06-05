@@ -13,8 +13,9 @@ import { Puppet } from '@latticexyz/world-modules/src/modules/puppet/Puppet.sol'
 import { createPuppet } from '@latticexyz/world-modules/src/modules/puppet/createPuppet.sol';
 
 import { MODULE_NAMESPACE, MODULE_NAMESPACE_ID, ERC1155_REGISTRY_TABLE_ID } from './constants.sol';
-import { _erc1155SystemId, _totalSupplyTableId, _metadataTableId, _erc1155URIStorageTableId, _operatorApprovalTableId, _ownersTableId } from './utils.sol';
+import { _erc1155SystemId, _totalSupplyTableId,_erc1155URIStorageSystemId, _metadataTableId, _erc1155URIStorageTableId, _operatorApprovalTableId, _ownersTableId } from './utils.sol';
 import { ERC1155System } from './ERC1155System.sol';
+import { ERC1155URIStorageSystem } from './ERC1155URIStorageSystem.sol';
 
 import { Owners } from '../codegen/tables/Owners.sol';
 import { OperatorApproval } from '../codegen/tables/OperatorApproval.sol';
@@ -54,6 +55,9 @@ contract ERC1155Module is Module {
     ResourceId erc1155SystemId = _erc1155SystemId(namespace);
     address puppet = createPuppet(world, erc1155SystemId);
 
+    ResourceId erc1155UriStorageSystemId = _erc1155URIStorageSystemId(namespace);
+    address uriPuppet = createPuppet(world, erc1155UriStorageSystemId);
+
     // Transfer ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
     world.transferOwnership(namespaceId, _msgSender());
@@ -65,6 +69,7 @@ contract ERC1155Module is Module {
     }
 
     ERC1155Registry.set(ERC1155_REGISTRY_TABLE_ID, namespaceId, puppet);
+    // ERC1155Registry.set(ERC1155_REGISTRY_TABLE_ID, namespaceId, uriPuppet);
   }
 
   function installRoot(bytes memory) public pure {
@@ -88,8 +93,9 @@ contract ERC1155ModuleRegistrationLibrary {
     ERC1155MetadataURI.register(_metadataTableId(namespace));
     TotalSupply.register(_totalSupplyTableId(namespace));
 
-    console2.logBytes14(namespace);
     // Register a new ERC1155System
     world.registerSystem(_erc1155SystemId(namespace), new ERC1155System(), true);
+    // register URI storage system
+    world.registerSystem(_erc1155URIStorageSystemId(namespace), new ERC1155URIStorageSystem(), true);
   }
 }

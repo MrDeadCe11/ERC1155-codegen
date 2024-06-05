@@ -9,17 +9,21 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IERC1155System {
-  function setApprovalForAll(address operator, bool approved) external;
+  function ERC1155__setApprovalForAll(address operator, bool approved) external;
 
-  function isApprovedForAll(address owner, address operator) external view returns (bool);
+  function ERC1155__isApprovedForAll(address owner, address operator) external view returns (bool);
 
-  function transferFrom(address from, address to, uint256 tokenId, uint256 value) external;
+  function ERC1155__transferFrom(address from, address to, uint256 tokenId, uint256 value) external;
 
-  function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value) external;
+  function ERC1155__safeTransferFrom(
+    address from,
+    address to,
+    uint256 tokenId,
+    uint256 value,
+    bytes memory data
+  ) external;
 
-  function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes memory data) external;
-
-  function safeBatchTransferFrom(
+  function ERC1155__safeBatchTransferFrom(
     address from,
     address to,
     uint256[] calldata ids,
@@ -27,29 +31,30 @@ interface IERC1155System {
     bytes calldata data
   ) external;
 
-  function mint(address to, uint256 tokenId, uint256 value) external;
+  function ERC1155__mint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
 
-  function mint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
+  function ERC1155__safeMint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
 
-  function safeMint(address to, uint256 tokenId, uint256 value) external;
+  function ERC1155__burn(uint256 tokenId, uint256 value) external;
 
-  function safeMint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
+  function ERC1155__balanceOf(address owner, uint256 id) external view returns (uint256);
 
-  function burn(uint256 tokenId, uint256 value) external;
+  function ERC1155__balanceOfBatch(
+    address[] memory accounts,
+    uint256[] memory ids
+  ) external view returns (uint256[] memory);
 
-  function balanceOf(address owner, uint256 id) external view returns (uint256);
+  function ERC1155__uri(uint256 tokenId) external view returns (string memory);
 
-  function balanceOfBatch(address[] memory accounts, uint256[] memory ids) external view returns (uint256[] memory);
+  function ERC1155__onERC1155Received(
+    address,
+    address,
+    uint256,
+    uint256,
+    bytes calldata
+  ) external returns (bytes4 retval);
 
-  function uri(uint256 tokenId) external view returns (string memory);
-
-  function setTokenURI(uint256 tokenId, string memory tokenURI) external;
-
-  function totalSupply(uint256 tokenId) external view returns (uint256 _totalSupply);
-
-  function onERC1155Received(address, address, uint256, uint256, bytes calldata) external returns (bytes4 retval);
-
-  function onERC1155BatchReceived(
+  function ERC1155__onERC1155BatchReceived(
     address,
     address,
     uint256[] calldata,

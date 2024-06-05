@@ -56,13 +56,6 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
   /**
    * @dev See {IERC1155-safeTransferFrom}.
    */
-  function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value) public {
-    safeTransferFrom(from, to, tokenId, value, '');
-  }
-
-  /**
-   * @dev See {IERC1155-safeTransferFrom}.
-   */
   function safeTransferFrom(
     address from,
     address to,
@@ -97,12 +90,12 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    *
    * Emits a {Transfer} event.
    */
-  function mint(address to, uint256 tokenId, uint256 value) public virtual {
-    _mint(to, tokenId, value, '');
-  }
 
   function mint(address to, uint256 tokenId, uint256 value, bytes memory data) public virtual {
-    _mint(to, tokenId, value, data);
+        _requireOwner();
+    if(to == address(0))revert ERC1155InvalidReceiver(to);
+      (uint256[] memory ids, uint256[] memory values) = _asSingletonArrays(tokenId, value);
+      _update(address(0), to, ids, values);
   }
 
   /**
@@ -117,12 +110,12 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    *
    * Emits a {Transfer} event.
    */
-  function _mint(address to, uint256 tokenId, uint256 value, bytes memory data) internal {
-    _requireOwner();
-    if(to == address(0))revert ERC1155InvalidReceiver(to);
-      (uint256[] memory ids, uint256[] memory values) = _asSingletonArrays(tokenId, value);
-      _update(address(0), to, ids, values);
-  }
+  // function _mint(address to, uint256 tokenId, uint256 value, bytes memory data) internal {
+  //   _requireOwner();
+  //   if(to == address(0))revert ERC1155InvalidReceiver(to);
+  //     (uint256[] memory ids, uint256[] memory values) = _asSingletonArrays(tokenId, value);
+  //     _update(address(0), to, ids, values);
+  // }
 
   /**
    * @dev Mints `tokenId`, transfers it to `to` and checks for `to` acceptance.
@@ -135,20 +128,9 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    *
    * Emits a {Transfer} event.
    */
-  function safeMint(address to, uint256 tokenId, uint256 value) public {
-    _safeMint(to, tokenId, value, '');
-  }
 
-  /**
-   * @dev Same as {xref-ERC1155-safeMint-address-uint256-}[`safeMint`], with an additional `data` parameter which is
-   * forwarded in {IERC1155Receiver-onERC1155Received} to contract recipients.
-   */
   function safeMint(address to, uint256 tokenId, uint256 value, bytes memory data) public virtual {
-    _safeMint(to, tokenId, value, data);
-  }
-
-  function _safeMint(address to, uint256 tokenId, uint256 value, bytes memory data) internal virtual {
-    _mint(to, tokenId, value, data);
+    mint(to, tokenId, value, data);
     _checkOnERC1155Received(address(0), to, tokenId, value, data);
   }
 
@@ -214,6 +196,8 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
     // If token URI is set, concatenate base URI and tokenURI (via string.concat).
     return bytes(tokenURI).length > 0 ? string.concat(baseURI, tokenURI) : baseURI;
   }
+
+
 
   /**
    * @dev Returns whether `spender` is allowed to manage `owner`'s tokens, or `tokenId` in

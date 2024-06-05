@@ -17,6 +17,7 @@ bytes16 constant OWNERS_NAME = 'Owners';
 bytes16 constant TOTAL_SUPPLY_NAME = 'TotalSupply';
 
 bytes16 constant ERC1155_SYSTEM_NAME = 'ERC1155System';
+bytes16 constant ERC1155URISTORAGE_SYSTEM_NAME = 'URIStorageSystem';
 
 ResourceId constant ERC1155_REGISTRY_TABLE_ID = ResourceId.wrap(
   bytes32(abi.encodePacked(RESOURCE_TABLE, MODULE_NAMESPACE, bytes16('ERC1155Registry')))
