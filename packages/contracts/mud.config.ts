@@ -1,15 +1,15 @@
 import { defineWorld } from "@latticexyz/world";
 
 export default defineWorld({
-  namespace: "ERC1155",
+  namespace: "",
   userTypes: {
     ResourceId: { filePath: '@latticexyz/store/src/ResourceId.sol', type: 'bytes32' },
   },
   tables: {
     /************************************************************************
-     *
-     *    ERC1155 MODULE
-     *
+     *                                                                      *
+     *    ERC1155 MODULE                                                    *
+     *                                                                      *
      ************************************************************************/
     ERC1155MetadataURI: {
       schema: {
@@ -80,4 +80,5 @@ export default defineWorld({
       },
     },
   },
+  excludeSystems: ['ERC1155Module','ERC1155URIStorage', 'ERC1155System', 'ERC1155URIStorageSystem'],
 });

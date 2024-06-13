@@ -25,6 +25,7 @@ import { ERC1155Utils } from '../libraries/utils/ERC1155Utils.sol';
 import { _metadataTableId, _erc1155URIStorageTableId, _totalSupplyTableId, _operatorApprovalTableId, _ownersTableId } from './utils.sol';
 import { LibString } from '../libraries/LibString.sol';
 import 'forge-std/console2.sol';
+
 contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, System, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using LibString for uint256;

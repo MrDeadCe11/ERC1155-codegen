@@ -6,7 +6,6 @@ pragma solidity ^0.8.20;
  * @dev Events emitted by an ERC1155 compliant contract.
  */
 interface IERC1155Events {
-  event Approval(address owner, address to, uint256 tokenId, uint256 value);
   /**
    * @dev Emitted when `value` amount of tokens of type `id` are transferred from `from` to `to` by `operator`.
    */

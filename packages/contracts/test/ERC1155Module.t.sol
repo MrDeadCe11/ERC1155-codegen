@@ -88,22 +88,21 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     function setUp() public override {
         super.setUp();
         world = IWorld(worldAddress);
-        // token = IWorld(worldAddress);
-        world.installModule(new PuppetModule(), new bytes(0));
         StoreSwitch.setStoreAddress(address(world));
         vm.startPrank(deployer);
+        IERC1155 base = registerERC1155(
+            world,
+            'ERC1155',
+            'test_IERC1155_uri/'
+        );
+        token = new ERC1155System();
+
         world.grantAccess(_erc1155SystemId('ERC1155'), address(this));
         world.transferOwnership(WorldResourceIdLib.encodeNamespace('ERC1155'), address(this));
-        
-        // Register a new ERC1155 base
-        base = registerERC1155(world, 'myERC1155', 'testTokenURI/');
 
-        token = ERC1155System(address(base));
-
-        address uriStorageAddress = Systems.getSystem(_erc1155URIStorageSystemId('myERC1155'));
-        uriStorage = ERC1155URIStorageSystem(uriStorageAddress);
-        world.grantAccess(_erc1155URIStorageSystemId('myERC1155'), address(this));
-        world.transferOwnership(WorldResourceIdLib.encodeNamespace('myERC1155'), address(this));
+        // address uriStorageAddress = Systems.getSystem(_erc1155URIStorageSystemId('myERC1155'));
+        // uriStorage = ERC1155URIStorageSystem(uriStorageAddress);
+        // world.grantAccess(_erc1155URIStorageSystemId('myERC1155'), address(this));
         vm.stopPrank();
     }
 
