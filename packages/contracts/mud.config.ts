@@ -1,11 +1,18 @@
 import { defineWorld } from "@latticexyz/world";
 
 export default defineWorld({
-  namespace: "",
+  namespace: "TST",
   userTypes: {
     ResourceId: { filePath: '@latticexyz/store/src/ResourceId.sol', type: 'bytes32' },
   },
   tables: {
+    TestConfig: {
+      schema: {
+        erc721: 'address',
+        erc1155: 'address',
+      },
+      key: []
+    },
     /************************************************************************
      *                                                                      *
      *    ERC1155 MODULE                                                    *

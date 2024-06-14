@@ -15,6 +15,7 @@ import {registerERC721} from '@latticexyz/world-modules/src/modules/erc721-puppe
 import {ERC721System} from '@latticexyz/world-modules/src/modules/erc721-puppet/ERC721System.sol';
 import {ERC721MetadataData} from '@latticexyz/world-modules/src/modules/erc721-puppet/tables/ERC721Metadata.sol';
 import {BEFORE_CALL_SYSTEM} from '@latticexyz/world/src/systemHookTypes.sol';
+import {TestConfig} from '../src/codegen/tables/TestConfig.sol';
 import {IWorld} from '../src/codegen/world/IWorld.sol';
 ////
 
@@ -72,6 +73,15 @@ contract PostDeploy is Script {
             'TEST721',
             ERC721MetadataData({name: 'test721', symbol: 'SYM', baseURI: 'ERC721_test_uri'})
         );
+        TestConfig.setErc721(address(characters));
+        ResourceId erc20SystemId =  WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TEST20', name: 'GoldToken'});
+
+        System goldSystemContract = new ERC20System();
+
+        world.registerSystem(erc20SystemId, goldSystemContract, true);
+         ResourceId testerc721SystemId = WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TST', name: 'TestERC721System'});
+        address itemsSystemAddress = Systems.getSystem(testerc721SystemId);
+        world.transferOwnership(WorldResourceIdLib.encodeNamespace('TEST721'), itemsSystemAddress);
 
     }
 }

@@ -26,7 +26,7 @@ import { _metadataTableId, _erc1155URIStorageTableId, _totalSupplyTableId, _oper
 import { LibString } from '../libraries/LibString.sol';
 import 'forge-std/console2.sol';
 
-contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, System, PuppetMaster {
+  contract ERC1155System is IERC1155, System, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using LibString for uint256;
 
@@ -42,6 +42,7 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    * @dev See {IERC1155-isApprovedForAll}.
    */
   function isApprovedForAll(address owner, address operator) public view virtual returns (bool) {
+    
     return OperatorApproval.getApproved(_operatorApprovalTableId(_namespace()), owner, operator);
   }
 
@@ -93,8 +94,9 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    */
 
   function mint(address to, uint256 tokenId, uint256 value, bytes memory data) public virtual {
+    console2.log('mint');
         _requireOwner();
-    if(to == address(0))revert ERC1155InvalidReceiver(to);
+    if(to == address(0)) revert ERC1155InvalidReceiver(to);
       (uint256[] memory ids, uint256[] memory values) = _asSingletonArrays(tokenId, value);
       _update(address(0), to, ids, values);
   }
@@ -190,7 +192,7 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
    * Clients calling this function must replace the `\{id\}` substring with the
    * actual token type ID.
    */
-  function uri(uint256 tokenId) public view override returns (string memory) {
+  function uri(uint256 tokenId) public view returns (string memory) {
     string memory baseURI = ERC1155MetadataURI.getUri(_metadataTableId(_namespace()));
     string memory tokenURI = ERC1155URIStorage.getUri(_erc1155URIStorageTableId(_namespace()), tokenId);
 
@@ -538,11 +540,13 @@ contract ERC1155System is IERC1155, IERC1155MetadataURI, IERC1155Receiver, Syste
   }
 
   function _namespace() internal view returns (bytes14 namespace) {
+    console2.log('namespace');
     ResourceId systemId = SystemRegistry.get(address(this));
     return systemId.getNamespace();
   }
 
   function _requireOwner() internal view {
+    console2.log('req own', address(this));
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
   }
 }

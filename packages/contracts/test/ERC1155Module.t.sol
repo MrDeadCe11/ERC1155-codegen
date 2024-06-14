@@ -27,6 +27,8 @@ import {IERC1155Errors} from '../src/systems/IERC1155Errors.sol';
 import {IERC1155Events} from '../src/systems/IERC1155Events.sol';
 import {_erc1155SystemId, _erc1155URIStorageSystemId} from '../src/systems/utils.sol';
 import {MODULE_NAMESPACE} from '../src/systems/constants.sol';
+import {TestConfig} from '../src/codegen/tables/TestConfig.sol';
+import { ERC721System } from '@latticexyz/world-modules/src/modules/erc721-puppet/ERC721System.sol';
 
 abstract contract ERC1155TokenReceiver {
     function onERC1155Received(address, address, uint256, uint256, bytes calldata) external virtual returns (bytes4) {
@@ -84,7 +86,9 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     IERC1155 base;
     ERC1155System token;
     ERC1155URIStorageSystem uriStorage;
-
+    bytes14 public erc1155Namespace = 'ERC1155';
+    ERC721System public erc721Token;
+    address test721System;
     function setUp() public override {
         super.setUp();
         world = IWorld(worldAddress);
@@ -92,14 +96,19 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         vm.startPrank(deployer);
         IERC1155 base = registerERC1155(
             world,
-            'ERC1155',
+            erc1155Namespace,
             'test_IERC1155_uri/'
         );
         token = new ERC1155System();
+        world.grantAccess(_erc1155SystemId(erc1155Namespace), address(this));
+        ResourceId test1155resourceId = WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TST', name: bytes16('Test1155System')});
+        address test1155System = Systems.getSystem(test1155resourceId);
+        world.transferOwnership(WorldResourceIdLib.encodeNamespace(erc1155Namespace), test1155System);
 
-        world.grantAccess(_erc1155SystemId('ERC1155'), address(this));
-        world.transferOwnership(WorldResourceIdLib.encodeNamespace('ERC1155'), address(this));
-
+        ResourceId test721SystemId = WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TST', name: bytes16('TestERC721System')});
+        test721System = Systems.getSystem(test721SystemId); 
+        address test721 = TestConfig.getErc721();
+        erc721Token = ERC721System(test721);
         // address uriStorageAddress = Systems.getSystem(_erc1155URIStorageSystemId('myERC1155'));
         // uriStorage = ERC1155URIStorageSystem(uriStorageAddress);
         // world.grantAccess(_erc1155URIStorageSystemId('myERC1155'), address(this));
@@ -107,7 +116,7 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function _expectAccessDenied(address caller) internal {
-        ResourceId tokenSystemId = _erc1155SystemId('myERC1155');
+        ResourceId tokenSystemId = _erc1155SystemId('ERC1155');
         vm.expectRevert(
             abi.encodeWithSelector(IWorldErrors.World_AccessDenied.selector, tokenSystemId.toString(), caller)
         );
@@ -169,6 +178,11 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         assertTrue(address(anotherToken) != address(token));
     }
 
+    function test_erc721Module()public {
+        world.TST__mint();
+        assertEq(erc721Token.balanceOf(test721System),1);
+    }
+
     /////////////////////////////////////////////////
     // SOLADY ERC1155 TEST CASES
     // (https://github.com/Vectorized/solady/blob/main/test/ERC1155.t.sol)
@@ -178,8 +192,9 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.assume(owner != address(0));
 
-        token.mint(owner, id, value, '');
-
+        // token.mint(owner, id, value, '');
+        world.TST__mint1155();
+        // token.isApprovedForAll(owner, address(this));
         assertEq(token.balanceOf(owner, id), value);
     }
 

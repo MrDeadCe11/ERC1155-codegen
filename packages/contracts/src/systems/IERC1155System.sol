@@ -27,7 +27,7 @@ interface IERC1155System {
     bytes calldata data
   ) external;
 
-  function mint(address to, uint256 tokenId, uint256 value) external;
+  // function mint(address to, uint256 tokenId, uint256 value) external;
 
   function mint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
 

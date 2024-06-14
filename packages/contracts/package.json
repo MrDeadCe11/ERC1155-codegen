@@ -12,7 +12,7 @@
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier --write 'src/**/*.sol'",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
-    "test": "tsc --noEmit && mud test --forgeOptions=-vvv --forgeScriptOptions=--slow"
+    "test": "tsc --noEmit && mud test --forgeOptions=-vvvv --forgeScriptOptions=--slow"
   },
   "dependencies": {
     "@latticexyz/cli": "2.0.11",
