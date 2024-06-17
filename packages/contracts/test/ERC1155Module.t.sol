@@ -89,6 +89,7 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     bytes14 public erc1155Namespace = 'ERC1155';
     ERC721System public erc721Token;
     address test721System;
+    address test1155System;
     function setUp() public override {
         super.setUp();
         world = IWorld(worldAddress);
@@ -102,7 +103,7 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         token = new ERC1155System();
         world.grantAccess(_erc1155SystemId(erc1155Namespace), address(this));
         ResourceId test1155resourceId = WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TST', name: bytes16('Test1155System')});
-        address test1155System = Systems.getSystem(test1155resourceId);
+        test1155System = Systems.getSystem(test1155resourceId);
         world.transferOwnership(WorldResourceIdLib.encodeNamespace(erc1155Namespace), test1155System);
 
         ResourceId test721SystemId = WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TST', name: bytes16('TestERC721System')});
@@ -112,6 +113,9 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         // address uriStorageAddress = Systems.getSystem(_erc1155URIStorageSystemId('myERC1155'));
         // uriStorage = ERC1155URIStorageSystem(uriStorageAddress);
         // world.grantAccess(_erc1155URIStorageSystemId('myERC1155'), address(this));
+        vm.label(worldAddress, 'world');
+        vm.label(address(token), 'ERC1155System');
+        vm.label(test1155System, 'test 1155 system');
         vm.stopPrank();
     }
 
@@ -165,7 +169,7 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
 
     function testSetUp() public {
         assertTrue(address(token) != address(0));
-        assertEq(NamespaceOwner.get(WorldResourceIdLib.encodeNamespace('ERC1155')), address(this));
+        assertEq(NamespaceOwner.get(WorldResourceIdLib.encodeNamespace('ERC1155')), address(test1155System));
     }
 
     function testInstallTwice() public {
