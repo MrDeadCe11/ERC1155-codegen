@@ -9,7 +9,7 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IERC1155URIStorageSystem {
-  function ERC1155__setTokenURI(uint256 tokenId, string memory tokenURI) external;
+    function ERC1155__setTokenURI(uint256 tokenId, string memory tokenURI) external;
 
-  function ERC1155__setMetadataURI(uint256 tokenId, string memory tokenURI) external;
+    function ERC1155__setMetadataURI(uint256 tokenId, string memory tokenURI) external;
 }

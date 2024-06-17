@@ -9,5 +9,5 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ITest1155System {
-  function TST__mint1155(address owner, uint256 tokenId, uint256 _value) external;
+    function TST__mint1155(address owner, uint256 tokenId, uint256 _value) external;
 }

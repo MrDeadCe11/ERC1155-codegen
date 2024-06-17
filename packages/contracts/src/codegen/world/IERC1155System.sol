@@ -9,56 +9,43 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IERC1155System {
-  function ERC1155__setApprovalForAll(address operator, bool approved) external;
+    function ERC1155__setApprovalForAll(address operator, bool approved) external;
 
-  function ERC1155__isApprovedForAll(address owner, address operator) external view returns (bool);
+    function ERC1155__isApprovedForAll(address owner, address operator) external view returns (bool);
 
-  function ERC1155__transferFrom(address from, address to, uint256 tokenId, uint256 value) external;
+    function ERC1155__transferFrom(address from, address to, uint256 tokenId, uint256 value) external;
 
-  function ERC1155__safeTransferFrom(
-    address from,
-    address to,
-    uint256 tokenId,
-    uint256 value,
-    bytes memory data
-  ) external;
+    function ERC1155__safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes memory data)
+        external;
 
-  function ERC1155__safeBatchTransferFrom(
-    address from,
-    address to,
-    uint256[] calldata ids,
-    uint256[] calldata values,
-    bytes calldata data
-  ) external;
+    function ERC1155__safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] calldata ids,
+        uint256[] calldata values,
+        bytes calldata data
+    ) external;
 
-  function ERC1155__mint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
+    function ERC1155__mint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
 
-  function ERC1155__safeMint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
+    function ERC1155__safeMint(address to, uint256 tokenId, uint256 value, bytes memory data) external;
 
-  function ERC1155__burn(uint256 tokenId, uint256 value) external;
+    function ERC1155__burn(uint256 tokenId, uint256 value) external;
 
-  function ERC1155__balanceOf(address owner, uint256 id) external view returns (uint256);
+    function ERC1155__balanceOf(address owner, uint256 id) external view returns (uint256);
 
-  function ERC1155__balanceOfBatch(
-    address[] memory accounts,
-    uint256[] memory ids
-  ) external view returns (uint256[] memory);
+    function ERC1155__balanceOfBatch(address[] memory accounts, uint256[] memory ids)
+        external
+        view
+        returns (uint256[] memory);
 
-  function ERC1155__uri(uint256 tokenId) external view returns (string memory);
+    function ERC1155__uri(uint256 tokenId) external view returns (string memory);
 
-  function ERC1155__onERC1155Received(
-    address,
-    address,
-    uint256,
-    uint256,
-    bytes calldata
-  ) external returns (bytes4 retval);
+    function ERC1155__onERC1155Received(address, address, uint256, uint256, bytes calldata)
+        external
+        returns (bytes4 retval);
 
-  function ERC1155__onERC1155BatchReceived(
-    address,
-    address,
-    uint256[] calldata,
-    uint256[] calldata,
-    bytes calldata
-  ) external returns (bytes4 retval);
+    function ERC1155__onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata)
+        external
+        returns (bytes4 retval);
 }
