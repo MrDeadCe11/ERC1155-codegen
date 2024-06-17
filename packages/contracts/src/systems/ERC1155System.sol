@@ -94,7 +94,6 @@ import 'forge-std/console2.sol';
    */
 
   function mint(address to, uint256 tokenId, uint256 value, bytes memory data) public virtual {
-    console2.log('mint');
         _requireOwner();
     if(to == address(0)) revert ERC1155InvalidReceiver(to);
       (uint256[] memory ids, uint256[] memory values) = _asSingletonArrays(tokenId, value);
@@ -501,8 +500,6 @@ import 'forge-std/console2.sol';
   ) private {
     if (to.code.length > 0) {
       try IERC1155Receiver(to).onERC1155Received(_msgSender(), from, tokenId, value, data) returns (bytes4 retval) {
-        console2.logBytes4(retval);
-        console2.logBytes4(IERC1155Receiver.onERC1155Received.selector);
         if (retval != IERC1155Receiver.onERC1155Received.selector) {
           revert ERC1155InvalidReceiver(to);
         }
@@ -540,13 +537,11 @@ import 'forge-std/console2.sol';
   }
 
   function _namespace() internal view returns (bytes14 namespace) {
-    console2.log('namespace');
     ResourceId systemId = SystemRegistry.get(address(this));
     return systemId.getNamespace();
   }
 
   function _requireOwner() internal view {
-    console2.log('req own', address(this));
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
   }
 }

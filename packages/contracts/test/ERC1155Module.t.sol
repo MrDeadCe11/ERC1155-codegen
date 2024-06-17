@@ -10,6 +10,7 @@ import {StoreSwitch} from '@latticexyz/store/src/StoreSwitch.sol';
 import {World} from '@latticexyz/world/src/World.sol';
 import {WorldResourceIdLib, WorldResourceIdInstance} from '@latticexyz/world/src/WorldResourceId.sol';
 import {IWorld} from '../src/codegen/world/IWorld.sol';
+import { SystemRegistry } from '@latticexyz/world/src/codegen/tables/SystemRegistry.sol';
 import {NamespaceOwner} from '@latticexyz/world/src/codegen/tables/NamespaceOwner.sol';
 import {IWorldErrors} from '@latticexyz/world/src/IWorldErrors.sol';
 import {RESOURCE_SYSTEM, RESOURCE_NAMESPACE} from '@latticexyz/world/src/worldResourceTypes.sol';
@@ -84,7 +85,7 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     IWorld world;
     ERC1155Module erc1155Module;
     IERC1155 base;
-    ERC1155System token;
+    ERC1155System public token;
     ERC1155URIStorageSystem uriStorage;
     bytes14 public erc1155Namespace = 'ERC1155';
     ERC721System public erc721Token;
@@ -100,11 +101,12 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
             erc1155Namespace,
             'test_IERC1155_uri/'
         );
-        token = new ERC1155System();
+        
         world.grantAccess(_erc1155SystemId(erc1155Namespace), address(this));
         ResourceId test1155resourceId = WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TST', name: bytes16('Test1155System')});
         test1155System = Systems.getSystem(test1155resourceId);
-        world.transferOwnership(WorldResourceIdLib.encodeNamespace(erc1155Namespace), test1155System);
+        world.transferOwnership(WorldResourceIdLib.encodeNamespace(erc1155Namespace), address(this));
+        token = ERC1155System(address(base));
 
         ResourceId test721SystemId = WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TST', name: bytes16('TestERC721System')});
         test721System = Systems.getSystem(test721SystemId); 
@@ -169,7 +171,7 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
 
     function testSetUp() public {
         assertTrue(address(token) != address(0));
-        assertEq(NamespaceOwner.get(WorldResourceIdLib.encodeNamespace('ERC1155')), address(test1155System));
+        assertEq(NamespaceOwner.get(WorldResourceIdLib.encodeNamespace('ERC1155')), address(this));
     }
 
     function testInstallTwice() public {
@@ -196,14 +198,13 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.assume(owner != address(0));
 
-        // token.mint(owner, id, value, '');
-        world.TST__mint1155();
+        token.mint(owner, id, value, '');
+        // world.TST__mint1155(owner, id, value);
         // token.isApprovedForAll(owner, address(this));
         assertEq(token.balanceOf(owner, id), value);
     }
 
     function testTokenURI(address owner) public {
-        vm.skip(true);
         vm.assume(owner != address(0));
 
         token.mint(owner, 1, 1, '');
@@ -213,7 +214,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testMintRevertAccessDenied(uint256 id, address owner, uint256 value, address operator) public {
-        vm.skip(true);
         _assumeDifferentNonZero(owner, operator, address(this));
 
         _expectAccessDenied(operator);
@@ -222,7 +222,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testBurn(uint256 id, address owner, uint256 value) public {
-        vm.skip(true);
         vm.assume(owner != address(0));
         vm.assume(value != 0 && value < uint256(type(int256).max));
         assertEq(token.balanceOf(owner, id), 0, 'before');
@@ -238,7 +237,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testBurnRevertAccessDenied(uint256 id, address owner, uint256 value, address operator) public {
-        vm.skip(true);
         _assumeDifferentNonZero(owner, operator, address(this));
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(owner, id, value, '');
@@ -249,7 +247,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testTransferFrom(address owner, address to, uint256 tokenId, uint256 value) public {
-        vm.skip(true);
         _assumeDifferentNonZero(owner, to);
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(owner, tokenId, value, '');
@@ -262,7 +259,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testApproveAll(address owner, address operator, bool approved) public {
-        vm.skip(true);
         _assumeDifferentNonZero(owner, operator);
 
         vm.prank(owner);
@@ -274,7 +270,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testTransferFromSelf(uint256 id, address from, address to, uint256 value) public {
-        vm.skip(true);
         _assumeDifferentNonZero(from, to);
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(from, id, value, '');
@@ -288,7 +283,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testTransferFromApproveAll(uint256 id, address from, address to, uint256 value, address operator) public {
-        vm.skip(true);
         _assumeDifferentNonZero(from, to, operator);
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(from, id, value, '');
@@ -304,7 +298,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeTransferFromToEOA(uint256 id, address from, address to, uint256 value, address operator) public {
-        vm.skip(true);
         _assumeEOA(from);
         _assumeEOA(to);
         _assumeDifferentNonZero(from, to, operator);
@@ -324,7 +317,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeTransferFromToERC1155Recipient(uint256 id, address from, uint256 value, address operator) public {
-        vm.skip(true);
         ERC1155Recipient recipient = new ERC1155Recipient();
         _assumeDifferentNonZero(from, operator, address(recipient));
         vm.assume(value != 0 && value < uint256(type(int256).max));
@@ -346,7 +338,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeMintToEOA(uint256 id, address to, uint256 value) public {
-        vm.skip(true);
         _assumeEOA(to);
         vm.assume(to != address(0));
         vm.assume(value != 0 && value < uint256(type(int256).max));
@@ -357,7 +348,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeMintToERC1155Recipient(uint256 id, uint256 value) public {
-        vm.skip(true);
         ERC1155Recipient to = new ERC1155Recipient();
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.safeMint(address(to), id, value, '');
@@ -371,7 +361,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testMintToZeroReverts(uint256 id, uint256 value) public {
-        vm.skip(true);
         vm.expectRevert(abi.encodeWithSelector(ERC1155InvalidReceiver.selector, address(0)));
         token.mint(address(0), id, value, '');
     }
@@ -387,13 +376,11 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     // }
 
     function testBurnNonExistentReverts(uint256 id, uint256 value) public {
-        vm.skip(true);
         vm.expectRevert(abi.encodeWithSelector(IERC1155Errors.ERC1155NonexistentToken.selector, id));
         token.burn(id, value);
     }
 
     function testDoubleBurnReverts(uint256 id, uint256 value) public {
-        vm.skip(true);
         vm.assume(value != 0 && value < uint256(type(int256).max));
 
         token.mint(address(this), id, value, '');
@@ -404,7 +391,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testTransferFromNotExistentReverts(address from, address to, uint256 id, uint256 value) public {
-        vm.skip(true);
         _assumeDifferentNonZero(from, to);
 
         vm.expectRevert(abi.encodeWithSelector(IERC1155Errors.ERC1155NonexistentToken.selector, id));
@@ -414,7 +400,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     function testTransferFromWrongFromReverts(address to, uint256 id, address owner, address from, uint256 value)
         public
     {
-        vm.skip(true);
         _assumeDifferentNonZero(owner, from, to);
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(owner, id, value, '');
@@ -425,7 +410,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testTransferFromToZeroReverts(uint256 id, uint256 value) public {
-        vm.skip(true);
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(address(this), id, value, '');
 
@@ -434,7 +418,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testTransferFromNotOwner(uint256 id, address from, address to, uint256 value, address operator) public {
-        vm.skip(true);
         _assumeDifferentNonZero(from, to, operator);
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(from, id, value, '');
@@ -445,7 +428,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeTransferFromToNonERC1155RecipientReverts(uint256 id, address from, uint256 value) public {
-        vm.skip(true);
         vm.assume(from != address(0));
         vm.assume(value != 0 && value < uint256(type(int256).max));
 
@@ -464,7 +446,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         uint256 value,
         bytes memory data
     ) public {
-        vm.skip(true);
         vm.assume(from != address(0));
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(from, id, value, '');
@@ -477,7 +458,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeTransferFromToRevertingERC1155RecipientReverts(uint256 id, address from, uint256 value) public {
-        vm.skip(true);
         vm.assume(from != address(0));
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(from, id, value, '');
@@ -495,7 +475,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         uint256 value,
         bytes memory data
     ) public {
-        vm.skip(true);
         vm.assume(from != address(0));
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(from, id, value, '');
@@ -510,7 +489,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     function testSafeTransferFromToERC1155RecipientWithWrongReturnDataReverts(uint256 id, address from, uint256 value)
         public
     {
-        vm.skip(true);
         vm.assume(from != address(0));
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(from, id, value, '');
@@ -528,7 +506,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         uint256 value,
         bytes memory data
     ) public {
-        vm.skip(true);
         vm.assume(from != address(0));
         vm.assume(value != 0 && value < uint256(type(int256).max));
         token.mint(from, id, value, '');
@@ -541,7 +518,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeMintToNonERC1155RecipientReverts(uint256 id, uint256 value) public {
-        vm.skip(true);
         address to = address(new NonERC1155Recipient());
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.expectRevert(abi.encodeWithSelector(IERC1155Errors.ERC1155InvalidReceiver.selector, to));
@@ -549,7 +525,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeMintToNonERC1155RecipientWithDataReverts(uint256 id, uint256 value, bytes memory data) public {
-        vm.skip(true);
         address to = address(new NonERC1155Recipient());
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.expectRevert(abi.encodeWithSelector(IERC1155Errors.ERC1155InvalidReceiver.selector, to));
@@ -557,7 +532,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeMintToRevertingERC1155RecipientReverts(uint256 id, uint256 value) public {
-        vm.skip(true);
         address to = address(new RevertingERC1155Recipient());
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.expectRevert(abi.encodeWithSelector(IERC1155Receiver.onERC1155Received.selector));
@@ -567,7 +541,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     function testSafeMintToRevertingERC1155RecipientWithDataReverts(uint256 id, uint256 value, bytes memory data)
         public
     {
-        vm.skip(true);
         address to = address(new RevertingERC1155Recipient());
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.expectRevert(abi.encodeWithSelector(IERC1155Receiver.onERC1155Received.selector));
@@ -575,7 +548,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function testSafeMintToERC1155RecipientWithWrongReturnData(uint256 id, uint256 value) public {
-        vm.skip(true);
         address to = address(new WrongReturnDataERC1155Recipient());
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.expectRevert(abi.encodeWithSelector(IERC1155Errors.ERC1155InvalidReceiver.selector, to));
@@ -585,7 +557,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     function testSafeMintToERC1155RecipientWithWrongReturnDataWithData(uint256 id, uint256 value, bytes memory data)
         public
     {
-        vm.skip(true);
         address to = address(new WrongReturnDataERC1155Recipient());
         vm.assume(value != 0 && value < uint256(type(int256).max));
         vm.expectRevert(abi.encodeWithSelector(IERC1155Errors.ERC1155InvalidReceiver.selector, to));

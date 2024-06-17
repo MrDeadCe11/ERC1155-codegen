@@ -55,8 +55,8 @@ contract ERC1155Module is Module {
     ResourceId erc1155SystemId = _erc1155SystemId(namespace);
     address puppet = createPuppet(world, erc1155SystemId);
 
-    ResourceId erc1155UriStorageSystemId = _erc1155URIStorageSystemId(namespace);
-    address uriPuppet = createPuppet(world, erc1155UriStorageSystemId);
+    // ResourceId erc1155UriStorageSystemId = _erc1155URIStorageSystemId(namespace);
+    // address uriPuppet = createPuppet(world, erc1155UriStorageSystemId);
 
     // Transfer ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
@@ -92,10 +92,10 @@ contract ERC1155ModuleRegistrationLibrary {
     ERC1155URIStorage.register(_erc1155URIStorageTableId(namespace));
     ERC1155MetadataURI.register(_metadataTableId(namespace));
     TotalSupply.register(_totalSupplyTableId(namespace));
-
+    
     // Register a new ERC1155System
     world.registerSystem(_erc1155SystemId(namespace), new ERC1155System(), true);
     // register URI storage system
-    world.registerSystem(_erc1155URIStorageSystemId(namespace), new ERC1155URIStorageSystem(), true);
+    // world.registerSystem(_erc1155URIStorageSystemId(namespace), new ERC1155URIStorageSystem(), true);
   }
 }

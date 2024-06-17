@@ -25,11 +25,11 @@ import {ERC20System} from '@latticexyz/world-modules/src/modules/erc20-puppet/ER
 import {registerERC20} from '@latticexyz/world-modules/src/modules/erc20-puppet/registerERC20.sol';
 import {System} from '@latticexyz/world/src/System.sol';
 
-import {ERC1155Module} from '../src/ERC1155-puppet/ERC1155Module.sol';
-import {ERC1155System}from '../src/ERC1155-puppet/ERC1155System.sol';
-import {IERC1155} from '../src/ERC1155-puppet/IERC1155.sol';
-import {registerERC1155} from '../src/ERC1155-puppet/registerERC1155.sol';
-import {_erc1155SystemId} from '../src/ERC1155-puppet/utils.sol';
+import {ERC1155Module} from '../src/systems/ERC1155Module.sol';
+import {ERC1155System}from '../src/systems/ERC1155System.sol';
+import {IERC1155} from '../src/systems/IERC1155.sol';
+import {registerERC1155} from '../src/systems/registerERC1155.sol';
+import {_erc1155SystemId} from '../src/systems/utils.sol';
 import 'forge-std/console2.sol';
 
 struct ResourceIds {
@@ -73,14 +73,19 @@ contract PostDeploy is Script {
             'TEST721',
             ERC721MetadataData({name: 'test721', symbol: 'SYM', baseURI: 'ERC721_test_uri'})
         );
+
         TestConfig.setErc721(address(characters));
+
         ResourceId erc20SystemId =  WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TEST20', name: 'GoldToken'});
 
         System goldSystemContract = new ERC20System();
 
         world.registerSystem(erc20SystemId, goldSystemContract, true);
+
          ResourceId testerc721SystemId = WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: 'TST', name: 'TestERC721System'});
+        
         address itemsSystemAddress = Systems.getSystem(testerc721SystemId);
+        
         world.transferOwnership(WorldResourceIdLib.encodeNamespace('TEST721'), itemsSystemAddress);
 
     }
