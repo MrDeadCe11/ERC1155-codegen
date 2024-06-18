@@ -302,14 +302,18 @@ contract ERC1155System is IERC1155, System, PuppetMaster {
         }
 
         if (len == 1) {
-            bytes memory eventData = abi.encode(from, to, tokenIds[0], _values[0]);
             // Emit Transfer event on puppet
             puppet().log(
-                TransferSingle.selector, toTopic(from), toTopic(to), toTopic(tokenIds[0]), abi.encode(_values[0])
+                TransferSingle.selector,
+                toTopic(_msgSender()),
+                toTopic(from),
+                toTopic(to),
+                abi.encode(tokenIds[0], _values[0])
             );
         } else {
-            bytes memory eventData = abi.encode(from, to, tokenIds, _values);
-            puppet().log(TransferBatch.selector, eventData);
+            puppet().log(
+                TransferBatch.selector, toTopic(_msgSender()), toTopic(from), toTopic(to), abi.encode(tokenIds, _values)
+            );
         }
         return from;
     }
