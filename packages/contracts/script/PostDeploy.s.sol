@@ -64,28 +64,13 @@ contract PostDeploy is Script {
         //install puppet
         world.installModule(new PuppetModule(), new bytes(0));
         // install gold module
-        IERC20Mintable goldToken =
-            registerERC20(world, "TEST20", ERC20MetadataData({decimals: 18, name: "GoldToken", symbol: unicode"🜚"}));
+        IERC1155 base = registerERC1155(world, "ERC1155", "test_IERC1155_uri/");
 
-        // characters
-        IERC721Mintable characters = registerERC721(
-            world, "TEST721", ERC721MetadataData({name: "test721", symbol: "SYM", baseURI: "ERC721_test_uri"})
-        );
+        world.grantAccess(_erc1155SystemId("ERC1155"), address(worldAddress));
+        console2.log("WORLD ADDR: ", worldAddress);
+        console2.log("deploy er", msg.sender);
+        world.transferOwnership(WorldResourceIdLib.encodeNamespace("ERC1155"), address(vm.addr(deployerPrivateKey)));
 
-        TestConfig.setErc721(address(characters));
-
-        ResourceId erc20SystemId =
-            WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: "TEST20", name: "GoldToken"});
-
-        System goldSystemContract = new ERC20System();
-
-        world.registerSystem(erc20SystemId, goldSystemContract, true);
-
-        ResourceId testerc721SystemId =
-            WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: "TST", name: "TestERC721System"});
-
-        address itemsSystemAddress = Systems.getSystem(testerc721SystemId);
-
-        world.transferOwnership(WorldResourceIdLib.encodeNamespace("TEST721"), itemsSystemAddress);
+        TestConfig.setErc1155(address(base));
     }
 }

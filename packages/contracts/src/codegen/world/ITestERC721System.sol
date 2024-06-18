@@ -9,5 +9,5 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ITestERC721System {
-    function TST__mint() external;
+  function TST__mint() external;
 }

@@ -19,7 +19,6 @@ import {ERC1155URIStorage} from "../codegen/tables/ERC1155URIStorage.sol";
 import {OperatorApproval} from "../codegen/tables/OperatorApproval.sol";
 import {Owners} from "../codegen/tables/Owners.sol";
 import {TotalSupply} from "../codegen/tables/TotalSupply.sol";
-
 import {ERC1155Utils} from "../libraries/utils/ERC1155Utils.sol";
 
 import {
@@ -29,6 +28,7 @@ import {
     _operatorApprovalTableId,
     _ownersTableId
 } from "./utils.sol";
+
 import {LibString} from "../libraries/LibString.sol";
 import "forge-std/console2.sol";
 
@@ -304,7 +304,9 @@ contract ERC1155System is IERC1155, System, PuppetMaster {
         if (len == 1) {
             bytes memory eventData = abi.encode(from, to, tokenIds[0], _values[0]);
             // Emit Transfer event on puppet
-            puppet().log(TransferSingle.selector, eventData);
+            puppet().log(
+                TransferSingle.selector, toTopic(from), toTopic(to), toTopic(tokenIds[0]), abi.encode(_values[0])
+            );
         } else {
             bytes memory eventData = abi.encode(from, to, tokenIds, _values);
             puppet().log(TransferBatch.selector, eventData);
