@@ -112,14 +112,14 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
         token = ERC1155System(address(erc1155System));
 
         IERC721Mintable erc721mint = registerERC721(
-            world, "TST721", ERC721MetadataData({name: "TEST721", symbol: "TST721", baseURI: "TST_721_URI"})
+            world, "TEST721", ERC721MetadataData({name: "TEST721", symbol: "TST721", baseURI: "TST_721_URI"})
         );
         ResourceId test721SystemId =
             WorldResourceIdLib.encode({typeId: RESOURCE_SYSTEM, namespace: "TST", name: bytes16("TestERC721System")});
         test721System = Systems.getSystem(test721SystemId);
         address test721 = TestConfig.getErc721();
         erc721Token = ERC721System(address(erc721mint));
-        world.transferOwnership(WorldResourceIdLib.encodeNamespace("TST"), address(this));
+        world.transferOwnership(WorldResourceIdLib.encodeNamespace("TEST721"), address(test721System));
         // address uriStorageAddress = Systems.getSystem(_erc1155URIStorageSystemId('myERC1155'));
         // uriStorage = ERC1155URIStorageSystem(uriStorageAddress);
         // world.grantAccess(_erc1155URIStorageSystemId('myERC1155'), address(this));
@@ -193,7 +193,6 @@ contract ERC1155Test is MudTest, IERC1155Events, IERC1155Errors {
     }
 
     function test_erc721Module() public {
-        vm.skip(true);
         world.TST__mint();
         assertEq(erc721Token.balanceOf(test721System), 1);
     }
